@@ -1,0 +1,12 @@
+[project]
+name = "personal-finance-dashboard"
+version = "0.1.0"
+description = "Add your description here"
+requires-python = ">=3.12"
+dependencies = [
+    "django>=6.1",
+    "django-environ>=0.14.0",
+]
+
+[tool.ruff.lint]
+ignore = ["RUF012"]
