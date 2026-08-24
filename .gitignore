@@ -1,7 +1,19 @@
-__pycache__/
-*.pyc
+# Secrets and environment
+.env
+.env.*
+!.env.example
+
+# Django
 media/
 *.sqlite3
-.env
-staticfiles/
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+.venv/
+
+# Testing
 .pytest_cache/
