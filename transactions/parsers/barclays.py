@@ -3,7 +3,13 @@ import datetime
 import re
 from decimal import Decimal, InvalidOperation
 
-from .base import BaseStatementParser, ParsedError, ParsedTransaction, ParseResult
+from .base import (
+    BaseStatementParser,
+    ParsedError,
+    ParsedTransaction,
+    ParseResult,
+    UnknownStatementFormatError,
+)
 
 TRANSACTION_TYPE_MAP = {
     "Debit": "DEBIT",
@@ -58,7 +64,9 @@ class BarclaysCSVParser(BaseStatementParser):
         for row_number, row in enumerate(reader, start=1):
             if row_number == 1:
                 if not self.can_parse(tuple(field.strip() for field in row)):
-                    raise ValueError(f"Cannot parse file with header: {row}")
+                    raise UnknownStatementFormatError(
+                        "Header does not match Barclays CSV format."
+                    )
                 continue
 
             if not any(field.strip() for field in row):

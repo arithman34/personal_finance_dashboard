@@ -4,4 +4,4 @@ media/
 *.sqlite3
 .env
 staticfiles/
-
+.pytest_cache/
