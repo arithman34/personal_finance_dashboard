@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block title %}Transactions{% endblock %}
+
+{% block content %}
+  <h1>Transactions</h1>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Date</th>
+        <th>Merchant</th>
+        <th>Reference</th>
+        <th>Type</th>
+        <th>Amount</th>
+        <th>Account</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for transaction in page_obj %}
+        <tr>
+          <td>{{ transaction.effective_date }}</td>
+          <td>{{ transaction.merchant }}</td>
+          <td>{{ transaction.bank_reference }}</td>
+          <td>{{ transaction.get_transaction_type_display }}</td>
+          <td>{{ transaction.amount }}</td>
+          <td>{{ transaction.account }}</td>
+        </tr>
+      {% empty %}
+        <tr>
+          <td colspan="6">
+            No transactions yet.
+            <a href="{% url 'transactions:upload' %}">Upload a statement</a>.
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <div class="pagination">
+    <span class="step-links">
+      {% if page_obj.has_previous %}
+        <a href="?page=1">&laquo; first</a>
+        <a href="?page={{ page_obj.previous_page_number }}">previous</a>
+      {% endif %}
+
+      <span class="current">
+        Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
+      </span>
+
+      {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}">next</a>
+        <a href="?page={{ page_obj.paginator.num_pages }}">last &raquo;</a>
+      {% endif %}
+    </span>
+  </div>
+{% endblock %}

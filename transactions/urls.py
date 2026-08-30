@@ -5,5 +5,6 @@ from . import views
 app_name = "transactions"
 
 urlpatterns = [
-    path("upload/", views.upload, name="upload"),
+    path("", views.transaction_list, name="transaction_list"),
+    path("upload/", views.statement_upload, name="upload"),
 ]

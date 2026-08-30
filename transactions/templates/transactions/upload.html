@@ -1,22 +1,13 @@
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Upload File</title>
-  </head>
-  <body>
-    <form method="post" enctype="multipart/form-data">
-      {% csrf_token %} {{ form.as_p }}
-      <button type="submit">Upload</button>
-    </form>
+{% extends "base.html" %}
 
-    {% if messages %}
-    <ul>
-      {% for message in messages %}
-      <li>{{ message }}</li>
-      {% endfor %}
-    </ul>
-    {% endif %}
-  </body>
-</html>
+{% block title %}Upload statement{% endblock %}
+
+{% block content %}
+  <h1>Upload statement</h1>
+
+  <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Upload</button>
+  </form>
+{% endblock %}
