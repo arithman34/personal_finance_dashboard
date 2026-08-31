@@ -48,6 +48,13 @@ class Transaction(models.Model):
         blank=True,
         related_name="transactions",
     )
+    category = models.ForeignKey(
+        "Category",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="transactions"
+    )
     merchant = models.CharField(max_length=100, blank=True)
     bank_reference = models.CharField(max_length=100, blank=True)
     transaction_type = models.CharField(
@@ -119,3 +126,31 @@ class StatementUpload(models.Model):
 
     def __str__(self):
         return f"{self.rows} rows - {self.status} - {self.uploaded_at}"
+
+
+class Category(models.Model):
+    name = models.CharField(unique=True, max_length=100)
+    colour = models.CharField(max_length=6, default="6c757d")
+
+    class Meta:
+        ordering = ["name"]
+
+    def __str__(self):
+        return f"{self.name}"
+
+
+class CategoryRule(models.Model):
+    pattern = models.CharField(max_length=100)
+    category = models.ForeignKey(
+        "Category",
+        on_delete=models.CASCADE,
+        related_name="rules"
+    )
+    priority = models.PositiveIntegerField(default=100)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ["priority", "id"]
+
+    def __str__(self):
+        return f"{self.pattern}"
