@@ -4,16 +4,8 @@ from decimal import Decimal
 import pytest
 
 from transactions.models import Transaction
-from transactions.parsers.barclays import (
-    PAYMENT_CODE_MAP,
-    TRANSACTION_TYPE_MAP,
-    BarclaysCSVParser,
-)
-from transactions.parsers.base import (
-    ParsedTransaction,
-    ParseResult,
-    UnknownStatementFormatError,
-)
+from transactions.parsers.barclays import PAYMENT_CODE_MAP, TRANSACTION_TYPE_MAP, BarclaysCSVParser
+from transactions.parsers.base import ParsedTransaction, ParseResult, UnknownStatementFormatError
 from transactions.parsers.registry import get_parser
 
 
