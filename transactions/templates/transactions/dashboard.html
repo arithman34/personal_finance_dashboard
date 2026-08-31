@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+  <h1>Dashboard</h1>
+
+  <h3>Totals</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>Money in</th>
+        <th>Money out</th>
+        <th>Net</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>&pound;{{ totals.money_in }}</td>
+        <td>&pound;{{ totals.money_out }}</td>
+        <td>&pound;{{ totals.net }}</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>Monthly totals</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>Month</th>
+        <th>Money in</th>
+        <th>Money out</th>
+        <th>Net</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for month, figures in monthly_totals.items %}
+        <tr>
+          <td>{{ month|date:"F Y" }}</td>
+          <td>&pound;{{ figures.money_in }}</td>
+          <td>&pound;{{ figures.money_out }}</td>
+          <td>&pound;{{ figures.net }}</td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="4">No transactions yet.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <h3>Top merchants</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>Merchant</th>
+        <th>Spent</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for merchant, spent in top_merchants.items %}
+        <tr>
+          <td>{{ merchant }}</td>
+          <td>&pound;{{ spent }}</td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="2">No spending yet.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <h3>Totals by type</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Money in</th>
+        <th>Money out</th>
+        <th>Net</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for type, figures in totals_by_type.items %}
+        <tr>
+          <td>{{ type }}</td>
+          <td>&pound;{{ figures.money_in }}</td>
+          <td>&pound;{{ figures.money_out }}</td>
+          <td>&pound;{{ figures.net }}</td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="4">No transactions yet.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% endblock %}

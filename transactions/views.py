@@ -6,6 +6,7 @@ from django.shortcuts import redirect, render
 from .forms import StatementUploadForm
 from .importer import StatementImportError, import_statement
 from .models import Transaction
+from .stats import totals, monthly_totals, top_merchants, totals_by_type
 
 
 @login_required
@@ -39,3 +40,15 @@ def transaction_list(request):
     page_obj = paginator.get_page(page_number)
 
     return render(request, "transactions/transaction_list.html", {"page_obj": page_obj})
+
+
+@login_required
+def dashboard(request):
+    transactions = Transaction.objects.filter(account__user=request.user)
+    context = {
+        "totals": totals(transactions),
+        "monthly_totals": monthly_totals(transactions),
+        "top_merchants": top_merchants(transactions),
+        "totals_by_type": totals_by_type(transactions),
+    }
+    return render(request, "transactions/dashboard.html", context)
