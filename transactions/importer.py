@@ -4,6 +4,7 @@ from typing import NoReturn
 
 from django.db import transaction as db_transaction
 
+from .categoriser import active_rules, categorise
 from .models import StatementUpload, Transaction
 from .parsers.base import ParsedTransaction, UnknownStatementFormatError
 from .parsers.registry import get_parser
@@ -100,29 +101,37 @@ def import_statement(upload: StatementUpload) -> ImportResult:
 
     digests = fingerprints(result.transactions)
 
+    rules = active_rules(upload.user)
+
     existing = set(
         Transaction.objects.filter(
             account=account, fingerprint__in=digests
         ).values_list("fingerprint", flat=True)
     )
 
-    new_transactions = [
-        Transaction(
-            account=account,
-            statement_upload=upload,
-            fingerprint=digest,
-            posted_date=parsed.posted_date,
-            transaction_date=parsed.transaction_date,
-            amount=parsed.amount,
-            description=parsed.description,
-            merchant=parsed.merchant,
-            bank_reference=parsed.bank_reference,
-            transaction_type=parsed.transaction_type,
-            external_id=parsed.external_id,
+    new_transactions = []
+    for parsed, digest in zip(result.transactions, digests, strict=True):
+        if digest in existing:
+            continue
+
+        category = categorise(parsed.merchant, rules)
+        new_transactions.append(
+            Transaction(
+                account=account,
+                statement_upload=upload,
+                category=category,
+                category_source=Transaction.CategorySource.RULE if category else "",
+                fingerprint=digest,
+                posted_date=parsed.posted_date,
+                transaction_date=parsed.transaction_date,
+                amount=parsed.amount,
+                description=parsed.description,
+                merchant=parsed.merchant,
+                bank_reference=parsed.bank_reference,
+                transaction_type=parsed.transaction_type,
+                external_id=parsed.external_id,
+            )
         )
-        for parsed, digest in zip(result.transactions, digests, strict=True)
-        if digest not in existing
-    ]
 
     with db_transaction.atomic():
         Transaction.objects.bulk_create(new_transactions, ignore_conflicts=True)

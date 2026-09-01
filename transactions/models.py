@@ -38,6 +38,11 @@ class Transaction(models.Model):
         TRANSFER = "TRANSFER", "Transfer"
         OTHER = "OTHER", "Other"
 
+    class CategorySource(models.TextChoices):
+        MANUAL = "MANUAL", "Manual"
+        RULE = "RULE", "Rule"
+        LLM = "LLM", "LLM"
+
     account = models.ForeignKey(
         "Account", on_delete=models.CASCADE, related_name="transactions"
     )
@@ -59,6 +64,9 @@ class Transaction(models.Model):
     bank_reference = models.CharField(max_length=100, blank=True)
     transaction_type = models.CharField(
         max_length=50, choices=TransactionType.choices, default=TransactionType.OTHER
+    )
+    category_source = models.CharField(
+        max_length=10, choices=CategorySource.choices, blank=True, default=""
     )
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     posted_date = models.DateField()
@@ -129,11 +137,23 @@ class StatementUpload(models.Model):
 
 
 class Category(models.Model):
-    name = models.CharField(unique=True, max_length=100)
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="categories",
+    )
+    name = models.CharField(max_length=100)
     colour = models.CharField(max_length=6, default="6c757d")
 
     class Meta:
         ordering = ["name"]
+        constraints = [
+            # Per-user, not global: two people may both have "Groceries".
+            models.UniqueConstraint(
+                fields=["user", "name"],
+                name="unique_category_name_per_user",
+            ),
+        ]
 
     def __str__(self):
         return f"{self.name}"
@@ -151,6 +171,12 @@ class CategoryRule(models.Model):
 
     class Meta:
         ordering = ["priority", "id"]
+        constraints = [
+            models.CheckConstraint(
+                condition=models.Q(pattern__regex=r"\S"),
+                name="categoryrule_pattern_not_blank",
+            ),
+        ]
 
     def __str__(self):
         return f"{self.pattern}"

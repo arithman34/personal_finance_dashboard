@@ -7,12 +7,22 @@ class TransactionAdmin(admin.ModelAdmin):
     list_display = ("posted_date", "description", "amount", "account", "merchant", "category")
     list_filter = ("posted_date", "account", "transaction_type", "category")
     search_fields = ("description", "merchant")
-    readonly_fields = ("fingerprint", "created_at")
+    readonly_fields = ("fingerprint", "created_at", "category_source")
     list_select_related = ("account", "category")
+
+    def save_model(self, request, obj, form, change):
+        """Mark a hand-edited category so `recategorise` will not revert it."""
+        if "category" in form.changed_data:
+            obj.category_source = (
+                Transaction.CategorySource.MANUAL if obj.category_id else ""
+            )
+        super().save_model(request, obj, form, change)
 
 
 class CategoryAdmin(admin.ModelAdmin):
-    list_display = ("name", "colour")
+    list_display = ("name", "user", "colour")
+    list_filter = ("user",)
+    list_select_related = ("user",)
 
 
 class CategoryRuleAdmin(admin.ModelAdmin):
