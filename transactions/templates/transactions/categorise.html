@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block title %}Categorise{% endblock %}
+
+{% block content %}
+  <h1>Categorise</h1>
+
+  <p>
+    <a href="{% url 'admin:transactions_category_add' %}">Add a category</a>
+    {% if not category_count %}
+      &mdash; you have none yet, so create one before categorising.
+    {% endif %}
+  </p>
+
+  {% if rows %}
+    <p>{{ rows|length }} merchant{{ rows|length|pluralize }} still to categorise.</p>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Merchant</th>
+          <th>Transactions</th>
+          <th>Total</th>
+          <th>Pattern and category</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in rows %}
+          <tr>
+            <td>{{ row.merchant }}</td>
+            <td style="text-align: right">{{ row.count }}</td>
+            <td style="text-align: right">&pound;{{ row.total }}</td>
+            <td>
+              <form method="post">
+                {% csrf_token %}
+                {{ row.form.merchant }}
+                {{ row.form.pattern }}
+                {{ row.form.category }}
+                <button type="submit" name="action" value="rule"
+                        title="Save a rule so future transactions match too">
+                  Always
+                </button>
+                <button type="submit" name="action" value="assign"
+                        title="Categorise only the transactions listed here">
+                  Once
+                </button>
+              </form>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p>Everything is categorised.</p>
+  {% endif %}
+{% endblock %}

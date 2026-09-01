@@ -1,4 +1,5 @@
 from django.db import transaction as db_transaction
+from django.db.models import Count, Sum, QuerySet
 
 from .models import Category, CategoryRule, Transaction
 
@@ -57,3 +58,14 @@ def recategorise(user, force: bool = False) -> tuple[int, int]:
         )
 
     return scanned, len(changed)
+
+
+def uncategorised_merchants(transactions: QuerySet) -> list[dict]:
+    """The merchants still needing a category, biggest outgoing first."""
+    return list(
+        transactions.filter(category__isnull=True)
+        .exclude(merchant="")
+        .values("merchant")
+        .annotate(count=Count("id"), total=Sum("amount"))
+        .order_by("total")
+    )

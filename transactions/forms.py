@@ -1,6 +1,6 @@
 from django import forms
 
-from .models import Account, StatementUpload
+from .models import Account, StatementUpload, Category, CategoryRule
 
 
 class StatementUploadForm(forms.ModelForm):
@@ -22,3 +22,28 @@ class StatementUploadForm(forms.ModelForm):
             raise forms.ValidationError("Only CSV files are supported.")
 
         return file
+
+
+class CategoriseForm(forms.Form):
+    """One decision about one merchant."""
+
+    merchant = forms.CharField(widget=forms.HiddenInput)
+    pattern = forms.CharField(
+        required=False,
+        help_text="Shorten to match variants. Defaults to the whole merchant.",
+    )
+    category = forms.ModelChoiceField(queryset=Category.objects.none())
+
+    def __init__(self, *args, user=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["category"].queryset = Category.objects.filter(user=user)
+
+    def clean_pattern(self):
+        """Fall back to the merchant when no pattern was typed."""
+        return self.cleaned_data.get("pattern", "").strip()
+
+    def clean(self):
+        cleaned = super().clean()
+        if not cleaned.get("pattern"):
+            cleaned["pattern"] = cleaned.get("merchant", "").strip()
+        return cleaned

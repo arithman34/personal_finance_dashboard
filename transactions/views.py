@@ -3,9 +3,10 @@ from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.shortcuts import redirect, render
 
-from .forms import StatementUploadForm
+from .categoriser import recategorise, uncategorised_merchants
+from .forms import StatementUploadForm, CategoriseForm
 from .importer import StatementImportError, import_statement
-from .models import Transaction
+from .models import Category, CategoryRule, Transaction
 from .stats import totals, monthly_totals, top_merchants, totals_by_type
 
 
@@ -52,3 +53,64 @@ def dashboard(request):
         "totals_by_type": totals_by_type(transactions),
     }
     return render(request, "transactions/dashboard.html", context)
+
+
+@login_required
+def categorise(request):
+    transactions = Transaction.objects.filter(account__user=request.user)
+
+    if request.method == "POST":
+        form = CategoriseForm(request.POST, user=request.user)
+
+        if form.is_valid():
+            merchant = form.cleaned_data["merchant"]
+            category = form.cleaned_data["category"]
+            pattern = form.cleaned_data["pattern"]
+            action = request.POST.get("action")
+
+            if action == "rule":
+                CategoryRule.objects.get_or_create(
+                    pattern=pattern, category=category
+                )
+                _, changed = recategorise(request.user)
+                messages.success(
+                    request,
+                    f"Rule '{pattern}' -> {category}. "
+                    f"{changed} transactions recategorised.",
+                )
+            elif action == "assign":
+                updated = transactions.filter(
+                    merchant=merchant, category__isnull=True
+                ).update(
+                    category=category,
+                    category_source=Transaction.CategorySource.MANUAL,
+                )
+                messages.success(
+                    request, f"{updated} '{merchant}' transactions set to {category}."
+                )
+            else:
+                messages.error(request, "Unknown action.")
+        else:
+            messages.error(request, "Could not categorise that merchant.")
+
+        return redirect("transactions:categorise")
+
+    rows = [
+        {
+            **merchant,
+            "form": CategoriseForm(
+                user=request.user,
+                initial={
+                    "merchant": merchant["merchant"],
+                    "pattern": merchant["merchant"],
+                },
+            ),
+        }
+        for merchant in uncategorised_merchants(transactions)
+    ]
+
+    return render(
+        request,
+        "transactions/categorise.html",
+        {"rows": rows, "category_count": Category.objects.filter(user=request.user).count()},
+    )

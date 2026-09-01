@@ -11,6 +11,7 @@
       <a href="{% url 'transactions:transaction_list' %}">Transactions</a>
       <a href="{% url 'transactions:upload' %}">Upload statement</a>
       <a href="{% url 'transactions:dashboard' %}">Dashboard</a>
+      <a href="{% url 'transactions:categorise' %}">Categorise</a>
       <form method="post" action="{% url 'logout' %}">
         {% csrf_token %}
         <button type="submit">Logout</button>
@@ -26,8 +27,6 @@
       <li class="{{ message.tags }}">{{ message }}</li>
       {% endfor %}
     </ul>
-    {% endif %}
-
-    {% block content %}{% endblock %}
+    {% endif %} {% block content %}{% endblock %}
   </body>
 </html>
