@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block title %}Categories{% endblock %}
+
+{% block content %}
+  <h1>Categories</h1>
+
+  <p><a href="{% url 'transactions:category_create' %}">New category</a></p>
+
+  {% if category_list %}
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Colour</th>
+          <th>Rules</th>
+          <th>Transactions</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for category in category_list %}
+          <tr>
+            <td>{{ category.name }}</td>
+            <td>
+              <span style="display: inline-block; width: 1em; height: 1em;
+                           background: #{{ category.colour }}"></span>
+              #{{ category.colour }}
+            </td>
+            <td style="text-align: right">{{ category.rules.count }}</td>
+            <td style="text-align: right">{{ category.transactions.count }}</td>
+            <td>
+              <a href="{% url 'transactions:category_update' category.pk %}">Edit</a>
+              <a href="{% url 'transactions:category_delete' category.pk %}">Delete</a>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p>No categories yet.</p>
+  {% endif %}
+{% endblock %}

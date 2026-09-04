@@ -47,3 +47,21 @@ class CategoriseForm(forms.Form):
         if not cleaned.get("pattern"):
             cleaned["pattern"] = cleaned.get("merchant", "").strip()
         return cleaned
+
+
+class CategoryForm(forms.ModelForm):
+    class Meta:
+        model = Category
+        fields = ["name", "colour"]
+
+    def __init__(self, *args, user=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.instance.user = user
+
+    def validate_constraints(self):
+        exclude = self._get_validation_exclusions()
+        exclude.discard("user")
+        try:
+            self.instance.validate_constraints(exclude=exclude)
+        except forms.ValidationError as e:
+            self._update_errors(e)

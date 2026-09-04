@@ -1,13 +1,56 @@
+from typing import Any
+
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.paginator import Paginator
+from django.db.models.query import QuerySet
 from django.shortcuts import redirect, render
+from django.urls import reverse_lazy
+from django.views.generic.edit import CreateView, DeleteView, UpdateView
+from django.views.generic.list import ListView
 
 from .categoriser import recategorise, uncategorised_merchants
-from .forms import StatementUploadForm, CategoriseForm
+from .forms import StatementUploadForm, CategoriseForm, CategoryForm
 from .importer import StatementImportError, import_statement
 from .models import Category, CategoryRule, Transaction
-from .stats import totals, monthly_totals, top_merchants, totals_by_type
+from .stats import (totals, monthly_totals, top_merchants, totals_by_type,
+                    totals_by_category)
+
+
+class CategoryMixin(LoginRequiredMixin):
+    model = Category
+    success_url = reverse_lazy("transactions:category_list")
+
+    def get_queryset(self) -> QuerySet[Category]:
+        return Category.objects.filter(user=self.request.user)
+
+
+class CategoryFormMixin(CategoryMixin):
+    form_class = CategoryForm
+
+    def get_form_kwargs(self) -> dict[str, Any]:
+        return super().get_form_kwargs() | {"user": self.request.user}
+
+
+class CategoryListView(CategoryMixin, ListView):
+    pass
+
+
+class CategoryCreateView(CategoryFormMixin, CreateView):
+    pass
+
+
+class CategoryUpdateView(CategoryFormMixin, UpdateView):
+    pass
+
+
+class CategoryDeleteView(CategoryMixin, DeleteView):
+    def get_context_data(self, **kwargs) -> dict[str, Any]:
+        context = super().get_context_data(**kwargs)
+        context["rule_count"] = self.object.rules.count()
+        context["transaction_count"] = self.object.transactions.count()
+        return context
 
 
 @login_required
@@ -51,6 +94,7 @@ def dashboard(request):
         "monthly_totals": monthly_totals(transactions),
         "top_merchants": top_merchants(transactions),
         "totals_by_type": totals_by_type(transactions),
+        "totals_by_category": totals_by_category(transactions),
     }
     return render(request, "transactions/dashboard.html", context)
 

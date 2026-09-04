@@ -90,4 +90,32 @@
       {% endfor %}
     </tbody>
   </table>
+
+  <h3>Totals by category</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>Category</th>
+        <th>Money in</th>
+        <th>Money out</th>
+        <th>Net</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in totals_by_category %}
+        <tr>
+          <td>
+            <span style="display: inline-block; width: 1em; height: 1em;
+                         background: #{{ row.colour }}"></span>
+            {{ row.name }}
+          </td>
+          <td>&pound;{{ row.money_in }}</td>
+          <td>&pound;{{ row.money_out }}</td>
+          <td>&pound;{{ row.net }}</td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="4">No transactions yet.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
 {% endblock %}

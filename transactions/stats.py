@@ -1,4 +1,5 @@
 import datetime
+from dataclasses import dataclass
 from decimal import Decimal
 
 from django.db.models import DecimalField, Q, QuerySet, Sum, Value
@@ -10,6 +11,17 @@ from .models import Transaction
 _MONEY = DecimalField(max_digits=12, decimal_places=2)
 _ZERO = Value(Decimal("0.00"), output_field=_MONEY)
 _TYPE_LABELS = dict(Transaction.TransactionType.choices)
+_UNCATEGORISED = "Uncategorised"
+_NO_COLOUR = "6c757d"
+
+
+@dataclass(frozen=True)
+class CategoryTotal:
+    name: str
+    colour: str
+    money_in: Decimal
+    money_out: Decimal
+    net: Decimal
 
 
 def totals(transactions: QuerySet) -> dict[str, Decimal]:
@@ -90,4 +102,31 @@ def totals_by_type(transactions: QuerySet) -> dict[str, dict[str, Decimal]]:
             "money_out": money_out,
             "net": money_in - money_out,
         }
+    return result
+
+
+def totals_by_category(transactions: QuerySet) -> list[CategoryTotal]:
+    """Money in, money out and net for each category in `transactions`."""
+    figures = transactions.values("category__name", "category__colour").annotate(
+        money_in=Coalesce(
+            Sum("amount", filter=Q(amount__gt=0)), _ZERO, output_field=_MONEY
+        ),
+        money_out=Coalesce(
+            Sum("amount", filter=Q(amount__lt=0)), _ZERO, output_field=_MONEY
+        ),
+    ).order_by("money_out")
+
+    result = []
+    for figure in figures:
+        money_in = figure["money_in"]
+        money_out = -figure["money_out"]
+        result.append(
+            CategoryTotal(
+                name=figure["category__name"] or _UNCATEGORISED,
+                colour=figure["category__colour"] or _NO_COLOUR,
+                money_in=money_in,
+                money_out=money_out,
+                net=money_in - money_out,
+            )
+        )
     return result

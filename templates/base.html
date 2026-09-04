@@ -12,6 +12,7 @@
       <a href="{% url 'transactions:upload' %}">Upload statement</a>
       <a href="{% url 'transactions:dashboard' %}">Dashboard</a>
       <a href="{% url 'transactions:categorise' %}">Categorise</a>
+      <a href="{% url 'transactions:category_list' %}">Categories</a>
       <form method="post" action="{% url 'logout' %}">
         {% csrf_token %}
         <button type="submit">Logout</button>
