@@ -80,12 +80,61 @@ def statement_upload(request):
 
 @login_required
 def transaction_list(request):
-    transactions = Transaction.objects.filter(account__user=request.user).select_related("account")
+    transactions = Transaction.objects.filter(account__user=request.user).select_related("account", "category")
+
+    if request.method == "POST":
+        transaction_id = request.POST.get("transaction", "")
+        transaction = None
+
+        if transaction_id.isdigit():
+            transaction = transactions.filter(pk=transaction_id).first()
+
+        if transaction is None:
+            messages.error(request, "That transaction could not be found.")
+            return redirect(request.get_full_path())
+
+        category_id = request.POST.get("category", "")
+        category = None
+
+        if category_id:
+            if category_id.isdigit():
+                category = Category.objects.filter(
+                    pk=category_id, user=request.user
+                ).first()
+
+            if category is None:
+                messages.error(request, "That category could not be found.")
+                return redirect(request.get_full_path())
+
+        transaction.category = category
+        transaction.category_source = (
+            Transaction.CategorySource.MANUAL if category else ""
+        )
+        transaction.save(update_fields=["category", "category_source"])
+
+        if category:
+            messages.success(
+                request, f"'{transaction.merchant}' set to {category}."
+            )
+        else:
+            messages.success(
+                request, f"'{transaction.merchant}' is no longer categorised."
+            )
+
+        return redirect(request.get_full_path())
+
     paginator = Paginator(transactions, 50)
     page_number = request.GET.get("page")
     page_obj = paginator.get_page(page_number)
 
-    return render(request, "transactions/transaction_list.html", {"page_obj": page_obj})
+    return render(
+        request,
+        "transactions/transaction_list.html",
+        {
+            "page_obj": page_obj,
+            "categories": list(Category.objects.filter(user=request.user)),
+        },
+    )
 
 
 @login_required
