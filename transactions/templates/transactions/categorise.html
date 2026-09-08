@@ -15,6 +15,16 @@
   {% if rows %}
     <p>{{ rows|length }} merchant{{ rows|length|pluralize }} still to categorise.</p>
 
+    {% if category_count %}
+      <form method="post">
+        {% csrf_token %}
+        <button type="submit" name="action" value="suggest"
+                title="Ask the AI to propose a pattern and category for each merchant">
+          Suggest with AI
+        </button>
+      </form>
+    {% endif %}
+
     <table>
       <thead>
         <tr>
@@ -27,7 +37,10 @@
       <tbody>
         {% for row in rows %}
           <tr>
-            <td>{{ row.merchant }}</td>
+            <td>
+              {{ row.merchant }}
+              {% if row.suggested %}<small>(suggested)</small>{% endif %}
+            </td>
             <td style="text-align: right">{{ row.count }}</td>
             <td style="text-align: right">&pound;{{ row.total }}</td>
             <td>

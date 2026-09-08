@@ -160,6 +160,10 @@ class Category(models.Model):
 
 
 class CategoryRule(models.Model):
+    class RuleSource(models.TextChoices):
+        MANUAL = "MANUAL", "Manual"
+        LLM = "LLM", "LLM"
+
     pattern = models.CharField(max_length=100)
     category = models.ForeignKey(
         "Category",
@@ -168,6 +172,9 @@ class CategoryRule(models.Model):
     )
     priority = models.PositiveIntegerField(default=100)
     is_active = models.BooleanField(default=True)
+    source = models.CharField(
+        max_length=10, choices=RuleSource.choices, default=RuleSource.MANUAL
+    )
 
     class Meta:
         ordering = ["priority", "id"]

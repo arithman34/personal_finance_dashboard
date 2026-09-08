@@ -6,6 +6,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.paginator import Paginator
 from django.db.models.query import QuerySet
 from django.shortcuts import redirect, render
+from django.template.defaultfilters import pluralize
 from django.urls import reverse_lazy
 from django.views.generic.edit import CreateView, DeleteView, UpdateView
 from django.views.generic.list import ListView
@@ -16,6 +17,7 @@ from .importer import StatementImportError, import_statement
 from .models import Category, CategoryRule, Transaction
 from .stats import (totals, monthly_totals, top_merchants, totals_by_type,
                     totals_by_category)
+from .suggester import SuggestionError, suggest_rules
 
 
 class CategoryMixin(LoginRequiredMixin):
@@ -104,17 +106,49 @@ def categorise(request):
     transactions = Transaction.objects.filter(account__user=request.user)
 
     if request.method == "POST":
+        action = request.POST.get("action")
+
+        if action == "suggest":
+            try:
+                suggestions = suggest_rules(request.user)
+            except SuggestionError as e:
+                messages.error(request, str(e))
+            else:
+                request.session["suggestions"] = {
+                    suggestion.merchant: {
+                        "pattern": suggestion.pattern,
+                        "category": suggestion.category.pk,
+                    }
+                    for suggestion in suggestions
+                }
+                messages.success(
+                    request,
+                    f"{len(suggestions)} merchant{pluralize(len(suggestions))} "
+                    f"pre-filled. Review before saving.",
+                )
+            return redirect("transactions:categorise")
+
         form = CategoriseForm(request.POST, user=request.user)
 
         if form.is_valid():
             merchant = form.cleaned_data["merchant"]
             category = form.cleaned_data["category"]
             pattern = form.cleaned_data["pattern"]
-            action = request.POST.get("action")
 
             if action == "rule":
+                suggestion = request.session.get("suggestions", {}).get(merchant, {})
+                accepted = (
+                    suggestion.get("pattern") == pattern
+                    and suggestion.get("category") == category.pk
+                )
                 CategoryRule.objects.get_or_create(
-                    pattern=pattern, category=category
+                    pattern=pattern,
+                    category=category,
+                    defaults={
+                        "source": CategoryRule.RuleSource.LLM
+                        if accepted
+                        else CategoryRule.RuleSource.MANUAL
+                    },
                 )
                 _, changed = recategorise(request.user)
                 messages.success(
@@ -139,22 +173,24 @@ def categorise(request):
 
         return redirect("transactions:categorise")
 
-    rows = [
-        {
-            **merchant,
-            "form": CategoriseForm(
-                user=request.user,
-                initial={
-                    "merchant": merchant["merchant"],
-                    "pattern": merchant["merchant"],
-                },
-            ),
-        }
-        for merchant in uncategorised_merchants(transactions)
-    ]
+    suggestions = request.session.get("suggestions", {})
 
-    return render(
-        request,
-        "transactions/categorise.html",
-        {"rows": rows, "category_count": Category.objects.filter(user=request.user).count()},
-    )
+    rows = []
+    for merchant in uncategorised_merchants(transactions):
+        suggestion = suggestions.get(merchant["merchant"], {})
+        rows.append(
+            {
+                **merchant,
+                "suggested": bool(suggestion),
+                "form": CategoriseForm(
+                    user=request.user,
+                    initial={
+                        "merchant": merchant["merchant"],
+                        "pattern": suggestion.get("pattern", merchant["merchant"]),
+                        "category": suggestion.get("category"),
+                    },
+                ),
+            }
+        )
+
+    return render(request, "transactions/categorise.html", {"rows": rows, "category_count": Category.objects.filter(user=request.user).count()},)

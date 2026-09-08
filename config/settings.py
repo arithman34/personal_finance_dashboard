@@ -143,3 +143,6 @@ LOGIN_URL = "login"
 LOGIN_REDIRECT_URL = "transactions:transaction_list"
 
 LOGOUT_REDIRECT_URL = "login"
+
+# Non-Django environment variables
+OPENAI_API_KEY = env("OPENAI_API_KEY", default="")
