@@ -137,12 +137,19 @@ class StatementUpload(models.Model):
 
 
 class Category(models.Model):
+    class KindType(models.TextChoices):
+        SPEND = "SPEND", "Spend"
+        INCOME = "INCOME", "Income"
+        TRANSFER = "TRANSFER", "Transfer"
+        SAVING = "SAVING", "Saving"
+    
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         related_name="categories",
     )
     name = models.CharField(max_length=100)
+    kind = models.CharField(max_length=20, default=KindType.SPEND, choices=KindType.choices)
     colour = models.CharField(max_length=6, default="6c757d")
 
     class Meta:

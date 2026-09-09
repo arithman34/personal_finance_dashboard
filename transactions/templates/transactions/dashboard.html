@@ -11,6 +11,7 @@
       <tr>
         <th>Money in</th>
         <th>Money out</th>
+        <th>Saved</th>
         <th>Net</th>
       </tr>
     </thead>
@@ -18,6 +19,7 @@
       <tr>
         <td>&pound;{{ totals.money_in }}</td>
         <td>&pound;{{ totals.money_out }}</td>
+        <td>&pound;{{ totals.saved }}</td>
         <td>&pound;{{ totals.net }}</td>
       </tr>
     </tbody>
@@ -30,6 +32,7 @@
         <th>Month</th>
         <th>Money in</th>
         <th>Money out</th>
+        <th>Saved</th>
         <th>Net</th>
       </tr>
     </thead>
@@ -39,10 +42,11 @@
           <td>{{ month|date:"F Y" }}</td>
           <td>&pound;{{ figures.money_in }}</td>
           <td>&pound;{{ figures.money_out }}</td>
+          <td>&pound;{{ figures.saved }}</td>
           <td>&pound;{{ figures.net }}</td>
         </tr>
       {% empty %}
-        <tr><td colspan="4">No transactions yet.</td></tr>
+        <tr><td colspan="5">No transactions yet.</td></tr>
       {% endfor %}
     </tbody>
   </table>
@@ -96,6 +100,7 @@
     <thead>
       <tr>
         <th>Category</th>
+        <th>Kind</th>
         <th>Money in</th>
         <th>Money out</th>
         <th>Net</th>
@@ -109,12 +114,13 @@
                          background: #{{ row.colour }}"></span>
             {{ row.name }}
           </td>
+          <td>{{ row.kind|title }}</td>
           <td>&pound;{{ row.money_in }}</td>
           <td>&pound;{{ row.money_out }}</td>
           <td>&pound;{{ row.net }}</td>
         </tr>
       {% empty %}
-        <tr><td colspan="4">No transactions yet.</td></tr>
+        <tr><td colspan="5">No transactions yet.</td></tr>
       {% endfor %}
     </tbody>
   </table>
