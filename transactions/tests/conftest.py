@@ -1,11 +1,17 @@
+import datetime
+from decimal import Decimal
+import itertools
 from pathlib import Path
 
 import pytest
 from django.core.files.base import ContentFile
 
 from accounts.models import User
-from transactions.models import Account, StatementUpload
+from transactions.models import Account, Category, StatementUpload, Transaction
 from transactions.parsers.barclays import BarclaysCSVParser
+
+
+_DEFAULT_DATE = datetime.date(2026, 7, 1)
 
 
 @pytest.fixture(autouse=True)
@@ -36,6 +42,51 @@ def make_account(make_user):
             institution=institution,
             sort_code=sort_code,
             account_number=account_number,
+        )
+
+    return _make
+
+
+@pytest.fixture
+def make_category(user):
+    """Return a factory that creates a new Category belonging to `user`."""
+    default_user = user
+
+    def _make(name: str, kind: str = Category.KindType.SPEND, colour: str = "000000", user=None) -> Category:
+        return Category.objects.create(
+            name=name,
+            kind=kind,
+            colour=colour,
+            user=user or default_user,
+        )
+
+    return _make
+
+
+@pytest.fixture
+def make_transaction(account):
+    """Return a factory that creates a new Transaction on `account`."""
+    counter = itertools.count()
+    default_account = account
+
+    def _make(
+        amount: str,
+        category: Category | None = None,
+        merchant: str = "Test Merchant",
+        posted_date: datetime.date = _DEFAULT_DATE,
+        transaction_type: str = Transaction.TransactionType.OTHER,
+        account: Account | None = None,
+    ) -> Transaction:
+        index = next(counter)
+        return Transaction.objects.create(
+            account=account or default_account,
+            amount=Decimal(amount),
+            category=category,
+            merchant=merchant,
+            posted_date=posted_date,
+            transaction_type=transaction_type,
+            description=f"Test transaction {index}",
+            fingerprint=f"test-fingerprint-{index}",
         )
 
     return _make
