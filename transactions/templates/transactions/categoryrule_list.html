@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block title %}Rules{% endblock %}
+
+{% block content %}
+  <h1>Rules</h1>
+
+  <p><a href="{% url 'transactions:rule_create' %}">New rule</a></p>
+
+  {% if categoryrule_list %}
+    <p>
+      {{ categoryrule_list|length }} rule{{ categoryrule_list|length|pluralize }},
+      applied in priority order. The first match wins.
+    </p>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Priority</th>
+          <th>Pattern</th>
+          <th>Category</th>
+          <th>Source</th>
+          <th>Active</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for rule in categoryrule_list %}
+          <tr>
+            <td style="text-align: right">{{ rule.priority }}</td>
+            <td>{{ rule.pattern }}</td>
+            <td>
+              <span style="display: inline-block; width: 1em; height: 1em;
+                           background: #{{ rule.category.colour }}"></span>
+              {{ rule.category.name }}
+            </td>
+            <td>{{ rule.get_source_display }}</td>
+            <td>{{ rule.is_active|yesno:"yes,no" }}</td>
+            <td>
+              <a href="{% url 'transactions:rule_update' rule.pk %}">Edit</a>
+              <a href="{% url 'transactions:rule_delete' rule.pk %}">Delete</a>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p>No rules yet. Categorise a merchant with "Always" and one will appear here.</p>
+  {% endif %}
+{% endblock %}

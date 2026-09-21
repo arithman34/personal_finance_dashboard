@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block title %}Delete rule{% endblock %}
+
+{% block content %}
+  <h1>Delete this rule?</h1>
+
+  <table>
+    <tbody>
+      <tr><th>Pattern</th><td>{{ object.pattern }}</td></tr>
+      <tr><th>Category</th><td>{{ object.category.name }}</td></tr>
+      <tr><th>Priority</th><td>{{ object.priority }}</td></tr>
+    </tbody>
+  </table>
+
+  <p>
+    Transactions it matched will be recategorised by whatever rule matches next,
+    or left uncategorised. Anything you set by hand is untouched.
+  </p>
+
+  <form method="post">
+    {% csrf_token %}
+    <button type="submit">Delete</button>
+    <a href="{% url 'transactions:rule_list' %}">Cancel</a>
+  </form>
+{% endblock %}

@@ -65,3 +65,13 @@ class CategoryForm(forms.ModelForm):
             self.instance.validate_constraints(exclude=exclude)
         except forms.ValidationError as e:
             self._update_errors(e)
+
+
+class RuleForm(forms.ModelForm):
+    class Meta:
+        model = CategoryRule
+        fields = ["pattern", "category", "priority", "is_active"]
+
+    def __init__(self, *args, user=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["category"].queryset = Category.objects.filter(user=user)

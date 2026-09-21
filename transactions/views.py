@@ -12,12 +12,58 @@ from django.views.generic.edit import CreateView, DeleteView, UpdateView
 from django.views.generic.list import ListView
 
 from .categoriser import recategorise, uncategorised_merchants
-from .forms import StatementUploadForm, CategoriseForm, CategoryForm
+from .forms import RuleForm, StatementUploadForm, CategoriseForm, CategoryForm
 from .importer import StatementImportError, import_statement
 from .models import Category, CategoryRule, Transaction
 from .stats import (totals, monthly_totals, top_merchants, totals_by_type,
                     totals_by_category)
 from .suggester import SuggestionError, suggest_rules
+
+
+class RuleMixin(LoginRequiredMixin):
+    model = CategoryRule
+    success_url = reverse_lazy("transactions:rule_list")
+
+    def get_queryset(self) -> QuerySet[CategoryRule]:
+        return CategoryRule.objects.filter(
+            category__user=self.request.user
+        ).select_related("category")
+
+    def reapply_rules(self) -> None:
+        _, changed = recategorise(self.request.user)
+        messages.success(self.request, f"{changed} transactions recategorised.")
+
+
+class RuleFormMixin(RuleMixin):
+    form_class = RuleForm
+
+    def get_form_kwargs(self) -> dict[str, Any]:
+        return super().get_form_kwargs() | {"user": self.request.user}
+
+    def form_valid(self, form):
+        form.instance.source = CategoryRule.RuleSource.MANUAL
+        response = super().form_valid(form)
+        self.reapply_rules()
+        return response
+
+
+class RuleListView(RuleMixin, ListView):
+    pass
+
+
+class RuleCreateView(RuleFormMixin, CreateView):
+    pass
+
+
+class RuleUpdateView(RuleFormMixin, UpdateView):
+    pass
+
+
+class RuleDeleteView(RuleMixin, DeleteView):
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        self.reapply_rules()
+        return response
 
 
 class CategoryMixin(LoginRequiredMixin):

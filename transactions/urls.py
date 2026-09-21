@@ -13,4 +13,8 @@ urlpatterns = [
     path("categories/new/", views.CategoryCreateView.as_view(), name="category_create"),
     path("categories/<int:pk>/edit/", views.CategoryUpdateView.as_view(), name="category_update"),
     path("categories/<int:pk>/delete/", views.CategoryDeleteView.as_view(), name="category_delete"),
+    path("rules/", views.RuleListView.as_view(), name="rule_list"),
+    path("rules/new/", views.RuleCreateView.as_view(), name="rule_create"),
+    path("rules/<int:pk>/edit/", views.RuleUpdateView.as_view(), name="rule_update"),
+    path("rules/<int:pk>/delete/", views.RuleDeleteView.as_view(), name="rule_delete"),
 ]

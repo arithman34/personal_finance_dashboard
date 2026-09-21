@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block title %}{% if object %}Edit rule{% else %}New rule{% endif %}{% endblock %}
+
+{% block content %}
+  <h1>{% if object %}Edit rule{% else %}New rule{% endif %}</h1>
+
+  <p>
+    A rule matches when its pattern appears anywhere in a merchant name, ignoring
+    case. Lower priorities are tried first.
+  </p>
+
+  <form method="post">
+    {% csrf_token %}
+    <table>{{ form.as_table }}</table>
+    <button type="submit">Save</button>
+    <a href="{% url 'transactions:rule_list' %}">Cancel</a>
+  </form>
+
+  {% if object.source == "LLM" %}
+    <p>This rule was suggested. Saving it will mark it as your own.</p>
+  {% endif %}
+{% endblock %}
