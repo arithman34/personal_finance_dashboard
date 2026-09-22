@@ -120,7 +120,8 @@ Sample statement data for trying the import lives in
 uv run pytest
 ```
 
-76 tests covering the parsers, the importer, the aggregates and the views.
+138 tests covering the parsers, the importer, the aggregates, the rule
+suggestions and the views.
 
 The aggregate and rule tests have been checked by mutation — deliberately
 breaking the kind exclusion, the rule re-application and the per-user scoping
@@ -145,7 +146,7 @@ transactions/
 ├── models.py               Account, Transaction, Category, CategoryRule
 ├── views.py                function views plus category and rule CRUD
 ├── migrations/             nine, two of them hand-written backfills
-└── tests/                  76 tests
+└── tests/                  138 tests
 templates/                  base and login
 ```
 
