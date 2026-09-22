@@ -1,34 +1,49 @@
+{% load static %}
 <!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>{% block title %}{% endblock %}</title>
+    <title>{% block title %}{% endblock %} &middot; Finance</title>
+    <link rel="stylesheet" href="{% static 'css/app.css' %}" />
   </head>
   <body>
-    <nav>
-      {% if user.is_authenticated %}
-      <a href="{% url 'transactions:transaction_list' %}">Transactions</a>
-      <a href="{% url 'transactions:upload' %}">Upload statement</a>
-      <a href="{% url 'transactions:dashboard' %}">Dashboard</a>
-      <a href="{% url 'transactions:categorise' %}">Categorise</a>
-      <a href="{% url 'transactions:category_list' %}">Categories</a>
-      <a href="{% url 'transactions:rule_list' %}">Rules</a>
-      <form method="post" action="{% url 'logout' %}">
-        {% csrf_token %}
-        <button type="submit">Logout</button>
-      </form>
-      {% else %}
-      <a href="{% url 'login' %}">Login</a>
-      {% endif %}
-    </nav>
+    <header class="container">
+      <nav>
+        <ul>
+          <li><a class="brand" href="{% url 'transactions:dashboard' %}">Finance</a></li>
+        </ul>
+        <ul>
+          {% if user.is_authenticated %}
+          <li><a href="{% url 'transactions:dashboard' %}">Dashboard</a></li>
+          <li><a href="{% url 'transactions:transaction_list' %}">Transactions</a></li>
+          <li><a href="{% url 'transactions:categorise' %}">Categorise</a></li>
+          <li><a href="{% url 'transactions:category_list' %}">Categories</a></li>
+          <li><a href="{% url 'transactions:rule_list' %}">Rules</a></li>
+          <li><a href="{% url 'transactions:upload' %}">Upload</a></li>
+          <li>
+            <form method="post" action="{% url 'logout' %}">
+              {% csrf_token %}
+              <button type="submit" class="secondary outline">Log out</button>
+            </form>
+          </li>
+          {% else %}
+          <li><a href="{% url 'login' %}">Log in</a></li>
+          {% endif %}
+        </ul>
+      </nav>
+    </header>
 
-    {% if messages %}
-    <ul class="messages">
-      {% for message in messages %}
-      <li class="{{ message.tags }}">{{ message }}</li>
-      {% endfor %}
-    </ul>
-    {% endif %} {% block content %}{% endblock %}
+    <main class="container">
+      {% if messages %}
+      <ul class="messages">
+        {% for message in messages %}
+        <li class="{{ message.tags }}">{{ message }}</li>
+        {% endfor %}
+      </ul>
+      {% endif %}
+
+      {% block content %}{% endblock %}
+    </main>
   </body>
 </html>

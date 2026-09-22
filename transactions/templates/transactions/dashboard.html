@@ -1,127 +1,134 @@
 {% extends "base.html" %}
+{% load money %}
 
 {% block title %}Dashboard{% endblock %}
 
 {% block content %}
   <h1>Dashboard</h1>
 
-  <h3>Totals</h3>
-  <table>
-    <thead>
-      <tr>
-        <th>Money in</th>
-        <th>Money out</th>
-        <th>Saved</th>
-        <th>Net</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td>&pound;{{ totals.money_in }}</td>
-        <td>&pound;{{ totals.money_out }}</td>
-        <td>&pound;{{ totals.saved }}</td>
-        <td>&pound;{{ totals.net }}</td>
-      </tr>
-    </tbody>
-  </table>
+  <div class="figures">
+    <div class="figure">
+      <span class="label">Money in</span>
+      <span class="value">{{ totals.money_in|money }}</span>
+    </div>
+    <div class="figure">
+      <span class="label">Money out</span>
+      <span class="value">{{ totals.money_out|money }}</span>
+    </div>
+    <div class="figure">
+      <span class="label">Saved</span>
+      <span class="value {{ totals.saved|sign }}">{{ totals.saved|money }}</span>
+    </div>
+    <div class="figure">
+      <span class="label">Net</span>
+      <span class="value {{ totals.net|sign }}">{{ totals.net|money }}</span>
+    </div>
+  </div>
 
-  <h3>Monthly totals</h3>
-  <table>
-    <thead>
-      <tr>
-        <th>Month</th>
-        <th>Money in</th>
-        <th>Money out</th>
-        <th>Saved</th>
-        <th>Net</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for month, figures in monthly_totals.items %}
+  <h2>By month</h2>
+  <div class="table-scroll">
+    <table>
+      <thead>
         <tr>
-          <td>{{ month|date:"F Y" }}</td>
-          <td>&pound;{{ figures.money_in }}</td>
-          <td>&pound;{{ figures.money_out }}</td>
-          <td>&pound;{{ figures.saved }}</td>
-          <td>&pound;{{ figures.net }}</td>
+          <th>Month</th>
+          <th class="money">In</th>
+          <th class="money">Out</th>
+          <th class="money">Saved</th>
+          <th class="money">Net</th>
         </tr>
-      {% empty %}
-        <tr><td colspan="5">No transactions yet.</td></tr>
-      {% endfor %}
-    </tbody>
-  </table>
+      </thead>
+      <tbody>
+        {% for month, figures in monthly_totals.items %}
+          <tr>
+            <td>{{ month|date:"F Y" }}</td>
+            <td class="money">{{ figures.money_in|money }}</td>
+            <td class="money">{{ figures.money_out|money }}</td>
+            <td class="money">{{ figures.saved|money }}</td>
+            <td class="money {{ figures.net|sign }}">{{ figures.net|money }}</td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="5">No transactions yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
 
-  <h3>Top merchants</h3>
-  <table>
-    <thead>
-      <tr>
-        <th>Merchant</th>
-        <th>Spent</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for merchant, spent in top_merchants.items %}
+  <h2>By category</h2>
+  <div class="table-scroll">
+    <table>
+      <thead>
         <tr>
-          <td>{{ merchant }}</td>
-          <td>&pound;{{ spent }}</td>
+          <th>Category</th>
+          <th>Kind</th>
+          <th class="money">In</th>
+          <th class="money">Out</th>
+          <th class="money">Net</th>
         </tr>
-      {% empty %}
-        <tr><td colspan="2">No spending yet.</td></tr>
-      {% endfor %}
-    </tbody>
-  </table>
+      </thead>
+      <tbody>
+        {% for row in totals_by_category %}
+          <tr>
+            <td>
+              <span class="swatch" style="background: #{{ row.colour }}"></span>
+              {{ row.name }}
+            </td>
+            <td class="muted">{{ row.kind|title }}</td>
+            <td class="money">{{ row.money_in|money }}</td>
+            <td class="money">{{ row.money_out|money }}</td>
+            <td class="money {{ row.net|sign }}">{{ row.net|money }}</td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="5">No transactions yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
 
-  <h3>Totals by type</h3>
-  <table>
-    <thead>
-      <tr>
-        <th>Type</th>
-        <th>Money in</th>
-        <th>Money out</th>
-        <th>Net</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for type, figures in totals_by_type.items %}
+  <h2>Top merchants</h2>
+  <div class="table-scroll">
+    <table>
+      <thead>
         <tr>
-          <td>{{ type }}</td>
-          <td>&pound;{{ figures.money_in }}</td>
-          <td>&pound;{{ figures.money_out }}</td>
-          <td>&pound;{{ figures.net }}</td>
+          <th>Merchant</th>
+          <th class="money">Spent</th>
         </tr>
-      {% empty %}
-        <tr><td colspan="4">No transactions yet.</td></tr>
-      {% endfor %}
-    </tbody>
-  </table>
+      </thead>
+      <tbody>
+        {% for merchant, spent in top_merchants.items %}
+          <tr>
+            <td>{{ merchant }}</td>
+            <td class="money">{{ spent|money }}</td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="2">No spending yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
 
-  <h3>Totals by category</h3>
-  <table>
-    <thead>
-      <tr>
-        <th>Category</th>
-        <th>Kind</th>
-        <th>Money in</th>
-        <th>Money out</th>
-        <th>Net</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for row in totals_by_category %}
+  <h2>By type</h2>
+  <div class="table-scroll">
+    <table>
+      <thead>
         <tr>
-          <td>
-            <span style="display: inline-block; width: 1em; height: 1em;
-                         background: #{{ row.colour }}"></span>
-            {{ row.name }}
-          </td>
-          <td>{{ row.kind|title }}</td>
-          <td>&pound;{{ row.money_in }}</td>
-          <td>&pound;{{ row.money_out }}</td>
-          <td>&pound;{{ row.net }}</td>
+          <th>Type</th>
+          <th class="money">In</th>
+          <th class="money">Out</th>
+          <th class="money">Net</th>
         </tr>
-      {% empty %}
-        <tr><td colspan="5">No transactions yet.</td></tr>
-      {% endfor %}
-    </tbody>
-  </table>
+      </thead>
+      <tbody>
+        {% for type, figures in totals_by_type.items %}
+          <tr>
+            <td>{{ type }}</td>
+            <td class="money">{{ figures.money_in|money }}</td>
+            <td class="money">{{ figures.money_out|money }}</td>
+            <td class="money {{ figures.net|sign }}">{{ figures.net|money }}</td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="4">No transactions yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
 {% endblock %}

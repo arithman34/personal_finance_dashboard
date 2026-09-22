@@ -7,7 +7,7 @@
 
   <table>
     <tbody>
-      <tr><th>Pattern</th><td>{{ object.pattern }}</td></tr>
+      <tr><th>Pattern</th><td><code>{{ object.pattern }}</code></td></tr>
       <tr><th>Category</th><td>{{ object.category.name }}</td></tr>
       <tr><th>Priority</th><td>{{ object.priority }}</td></tr>
     </tbody>
@@ -21,6 +21,6 @@
   <form method="post">
     {% csrf_token %}
     <button type="submit">Delete</button>
-    <a href="{% url 'transactions:rule_list' %}">Cancel</a>
+    <a href="{% url 'transactions:rule_list' %}" role="button" class="secondary outline">Cancel</a>
   </form>
 {% endblock %}

@@ -1,69 +1,72 @@
 {% extends "base.html" %}
+{% load money %}
 
 {% block title %}Categorise{% endblock %}
 
 {% block content %}
   <h1>Categorise</h1>
 
-  <p>
-    <a href="{% url 'transactions:category_create' %}">Add a category</a>
-    {% if not category_count %}
-      &mdash; you have none yet, so create one before categorising.
-    {% endif %}
-  </p>
-
   {% if rows %}
-    <p>{{ rows|length }} merchant{{ rows|length|pluralize }} still to categorise.</p>
+    <p>
+      {{ rows|length }} merchant{{ rows|length|pluralize }} still to categorise.
+      <a href="{% url 'transactions:category_create' %}">Add a category</a>
+      {% if not category_count %}
+        &mdash; you have none yet, so create one before categorising.
+      {% endif %}
+    </p>
 
     {% if category_count %}
       <form method="post">
         {% csrf_token %}
-        <button type="submit" name="action" value="suggest"
+        <button type="submit" name="action" value="suggest" class="secondary"
                 title="Ask the AI to propose a pattern and category for each merchant">
           Suggest with AI
         </button>
       </form>
     {% endif %}
 
-    <table>
-      <thead>
-        <tr>
-          <th>Merchant</th>
-          <th>Transactions</th>
-          <th>Total</th>
-          <th>Pattern and category</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for row in rows %}
+    <div class="table-scroll">
+      <table>
+        <thead>
           <tr>
-            <td>
-              {{ row.merchant }}
-              {% if row.suggested %}<small>(suggested)</small>{% endif %}
-            </td>
-            <td style="text-align: right">{{ row.count }}</td>
-            <td style="text-align: right">&pound;{{ row.total }}</td>
-            <td>
-              <form method="post">
-                {% csrf_token %}
-                {{ row.form.merchant }}
-                {{ row.form.pattern }}
-                {{ row.form.category }}
-                <button type="submit" name="action" value="rule"
-                        title="Save a rule so future transactions match too">
-                  Always
-                </button>
-                <button type="submit" name="action" value="assign"
-                        title="Categorise only the transactions listed here">
-                  Once
-                </button>
-              </form>
-            </td>
+            <th>Merchant</th>
+            <th class="count">Count</th>
+            <th class="money">Total</th>
+            <th>Pattern and category</th>
           </tr>
-        {% endfor %}
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          {% for row in rows %}
+            <tr>
+              <td>
+                {{ row.merchant }}
+                {% if row.suggested %}<span class="muted">suggested</span>{% endif %}
+              </td>
+              <td class="count">{{ row.count }}</td>
+              <td class="money {{ row.total|sign }}">{{ row.total|money }}</td>
+              <td>
+                <form method="post" class="inline-form">
+                  {% csrf_token %}
+                  {{ row.form.merchant }}
+                  {{ row.form.pattern }}
+                  {{ row.form.category }}
+                  <button type="submit" name="action" value="rule"
+                          title="Save a rule so future transactions match too">
+                    Always
+                  </button>
+                  <button type="submit" name="action" value="assign" class="secondary outline"
+                          title="Categorise only the transactions listed here">
+                    Once
+                  </button>
+                </form>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
   {% else %}
     <p>Everything is categorised.</p>
+    <p><a href="{% url 'transactions:dashboard' %}">Back to the dashboard</a></p>
   {% endif %}
 {% endblock %}

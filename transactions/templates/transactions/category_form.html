@@ -5,10 +5,15 @@
 {% block content %}
   <h1>{% if object %}Edit {{ object.name }}{% else %}New category{% endif %}</h1>
 
+  <p class="muted">
+    The kind decides how a category is counted. Only spending is subtracted from
+    your income; transfers and savings are left out of the totals.
+  </p>
+
   <form method="post">
     {% csrf_token %}
-    <table>{{ form.as_table }}</table>
+    {{ form.as_p }}
     <button type="submit">Save</button>
-    <a href="{% url 'transactions:category_list' %}">Cancel</a>
+    <a href="{% url 'transactions:category_list' %}" role="button" class="secondary outline">Cancel</a>
   </form>
 {% endblock %}

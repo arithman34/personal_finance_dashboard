@@ -5,6 +5,11 @@
 {% block content %}
   <h1>Upload statement</h1>
 
+  <p class="muted">
+    A CSV exported from your bank. Re-uploading a statement you have already
+    imported is safe &mdash; only rows that are not already there are added.
+  </p>
+
   <form method="post" enctype="multipart/form-data">
     {% csrf_token %}
     {{ form.as_p }}
