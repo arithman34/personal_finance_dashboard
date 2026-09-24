@@ -17,3 +17,6 @@ __pycache__/
 
 # Testing
 .pytest_cache/
+
+# Claude Code local tooling
+.claude/

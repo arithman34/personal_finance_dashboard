@@ -1,5 +1,7 @@
 # Personal Finance Dashboard
 
+**Live:** [web-production-117a.up.railway.app](https://web-production-117a.up.railway.app) — log in with `demo` / `demo-password-123`.
+
 A Django app that ingests UK bank statement CSVs, categorises the transactions,
 and shows where the money actually goes.
 
@@ -35,6 +37,20 @@ continuously — acceptable for a tool you look at weekly.
   have an LLM propose new rules for merchants it has not seen
 - **Reports** spending by month, by category and by merchant, with transfers and
   savings correctly kept out of the spending figures
+
+---
+
+## Screenshots
+
+| Dashboard | Transactions |
+| --- | --- |
+| ![Dashboard](docs/screenshots/dashboard.png) | ![Transactions](docs/screenshots/transactions.png) |
+
+| Categorise | Rules |
+| --- | --- |
+| ![Categorise](docs/screenshots/categorise.png) | ![Rules](docs/screenshots/rules.png) |
+
+Populated from `manage.py seed_demo`, not real transaction data.
 
 ---
 
