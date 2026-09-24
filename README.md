@@ -1,6 +1,6 @@
 # Personal Finance Dashboard
 
-**Live:** [web-production-117a.up.railway.app](https://web-production-117a.up.railway.app) — log in with `demo` / `demo-password-123`.
+**Live:** [web-production-117a.up.railway.app/transactions](https://web-production-117a.up.railway.app/transactions/) — log in with `demo` / `demo-password-123`.
 
 A Django app that ingests UK bank statement CSVs, categorises the transactions,
 and shows where the money actually goes.
