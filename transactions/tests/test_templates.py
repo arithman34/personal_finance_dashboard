@@ -1,3 +1,4 @@
+import re
 from decimal import Decimal
 
 import pytest
@@ -10,6 +11,10 @@ pytestmark = pytest.mark.django_db
 
 MINUS = "−"
 POUND = "£"
+
+# whitenoise's manifest storage renames static files with a content hash for
+# cache-busting, e.g. css/app.4f49ea1bbd21.css.
+APP_CSS = re.compile(r"css/app(\.[0-9a-f]{12})?\.css")
 
 
 def test_money_filter():
@@ -51,13 +56,13 @@ def test_every_page_renders(client, user, account, make_category, make_transacti
     for url in pages:
         response = client.get(url)
         assert response.status_code == 200, url
-        assert "css/app.css" in response.content.decode(), url
+        assert APP_CSS.search(response.content.decode()), url
 
     client.logout()
     login = client.get(reverse("login"))
 
     assert login.status_code == 200
-    assert "css/app.css" in login.content.decode()
+    assert APP_CSS.search(login.content.decode())
 
 
 def test_negative_amounts_reach_the_page_formatted(

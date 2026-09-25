@@ -43,5 +43,8 @@ jobs:
       - name: Install dependencies
         run: uv sync --frozen
 
+      - name: Collect static files
+        run: uv run manage.py collectstatic --noinput
+
       - name: Run tests
         run: uv run pytest
